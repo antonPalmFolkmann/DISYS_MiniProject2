@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package chat;
+option go_package = "https://github.com/antonPalmFolkmann/DISYS_MiniProject2;ChatService";
+
+service ChittyChatService{
+  rpc Publish (ChatMessageRequest) returns (ChatMessageReply) {}
+  rpc BroadCast (ChatMessage) returns (PublishMessage) {}
+}
+
+message ChatMessageRequest{
+  string message = 1;
+  int32 nodeA = 2;
+  int32 nodeB = 3;
+  int32 nodeC = 4;
+}
+
+message ChatMessageReply{
+
+}
+
+message ChatMessage{
+  string message = 1;
+}
+
+message PublishMessage{
+
+}
