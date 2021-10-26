@@ -3,9 +3,24 @@ syntax = "proto3";
 package chat;
 option go_package = "https://github.com/antonPalmFolkmann/DISYS_MiniProject2;ChatService";
 
-service ChittyChatService{
+service ChittyChatServiceIN{
   rpc Publish (PublishMessageRequest) returns (PublishMessageReply) {}
+  rpc Join (JoinRequest) returns (JoinReply) {}
+  rpc Leave (LeaveRequest) returns (LeaveReply) {}
+}
+
+service ChittyChatServiceOUT{
   rpc BroadCast (BroadCastRequest) returns (BroadCastReply) {}
+}
+
+message Participant{
+  string ID = 1;
+  int32 lamportTime = 2;
+}
+
+message Server{
+  string ID = 1;
+  int32 lamportTime = 2;
 }
 
 message PublishMessageRequest{
@@ -15,6 +30,7 @@ message PublishMessageRequest{
 
 message PublishMessageReply{
   string reply = 1;
+  int32 lamportTime = 2;
 }
 
 message BroadCastRequest{
@@ -23,5 +39,27 @@ message BroadCastRequest{
 }
 
 message BroadCastReply{
-  string message = 1;
+  string reply = 1;
+  int32 lamportTime = 2;
 }
+
+message JoinRequest{
+  Participant participant = 1;
+  int32 lamportTime = 2;
+}
+
+message JoinReply{
+  string reply = 1;
+  int32 lamportTime = 2;
+}
+
+message LeaveRequest{
+  Participant participant = 1;
+  int32 lamportTime = 2;
+}
+
+message LeaveReply{
+  string reply = 1;
+  int32 lamportTime = 2;
+}
+
