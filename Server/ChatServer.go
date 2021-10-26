@@ -15,9 +15,9 @@ type Server struct {
 	ChatService.UnimplementedChittyChatServiceServer
 }
 
-func (s *Server) BroadCast(ctx context.Context, in *ChatService.ChatMessage) (*ChatService.PublishMessage, error) {
+func (s *Server) BroadCast(ctx context.Context, in *ChatService.BroadCastRequest) (*ChatService.BroadCastReply, error) {
 	fmt.Printf("Received broadcastrequest request")
-	return &ChatService.PublishMessage{Reply: ChatService.ChatMessage.Message}, nil
+	return &ChatService.BroadCastReply{message: ChatService.BroadCastRequest.message}, nil
 }
 
 func main() {
@@ -32,4 +32,8 @@ func main() {
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
 	}
+}
+
+func ReceivePublishMessage() {
+
 }

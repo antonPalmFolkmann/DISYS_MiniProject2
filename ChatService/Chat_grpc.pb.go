@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChittyChatServiceClient interface {
 	Publish(ctx context.Context, in *PublishMessageRequest, opts ...grpc.CallOption) (*PublishMessageReply, error)
-	BroadCast(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*PublishMessage, error)
+	BroadCast(ctx context.Context, in *BroadCastRequest, opts ...grpc.CallOption) (*BroadCastReply, error)
 }
 
 type chittyChatServiceClient struct {
@@ -39,8 +39,8 @@ func (c *chittyChatServiceClient) Publish(ctx context.Context, in *PublishMessag
 	return out, nil
 }
 
-func (c *chittyChatServiceClient) BroadCast(ctx context.Context, in *ChatMessage, opts ...grpc.CallOption) (*PublishMessage, error) {
-	out := new(PublishMessage)
+func (c *chittyChatServiceClient) BroadCast(ctx context.Context, in *BroadCastRequest, opts ...grpc.CallOption) (*BroadCastReply, error) {
+	out := new(BroadCastReply)
 	err := c.cc.Invoke(ctx, "/chat.ChittyChatService/BroadCast", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c *chittyChatServiceClient) BroadCast(ctx context.Context, in *ChatMessage
 // for forward compatibility
 type ChittyChatServiceServer interface {
 	Publish(context.Context, *PublishMessageRequest) (*PublishMessageReply, error)
-	BroadCast(context.Context, *ChatMessage) (*PublishMessage, error)
+	BroadCast(context.Context, *BroadCastRequest) (*BroadCastReply, error)
 	mustEmbedUnimplementedChittyChatServiceServer()
 }
 
@@ -64,7 +64,7 @@ type UnimplementedChittyChatServiceServer struct {
 func (UnimplementedChittyChatServiceServer) Publish(context.Context, *PublishMessageRequest) (*PublishMessageReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
-func (UnimplementedChittyChatServiceServer) BroadCast(context.Context, *ChatMessage) (*PublishMessage, error) {
+func (UnimplementedChittyChatServiceServer) BroadCast(context.Context, *BroadCastRequest) (*BroadCastReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadCast not implemented")
 }
 func (UnimplementedChittyChatServiceServer) mustEmbedUnimplementedChittyChatServiceServer() {}
@@ -99,7 +99,7 @@ func _ChittyChatService_Publish_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _ChittyChatService_BroadCast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatMessage)
+	in := new(BroadCastRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func _ChittyChatService_BroadCast_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/chat.ChittyChatService/BroadCast",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChittyChatServiceServer).BroadCast(ctx, req.(*ChatMessage))
+		return srv.(ChittyChatServiceServer).BroadCast(ctx, req.(*BroadCastRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

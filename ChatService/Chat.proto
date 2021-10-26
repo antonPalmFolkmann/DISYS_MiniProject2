@@ -5,24 +5,23 @@ option go_package = "https://github.com/antonPalmFolkmann/DISYS_MiniProject2;Cha
 
 service ChittyChatService{
   rpc Publish (PublishMessageRequest) returns (PublishMessageReply) {}
-  rpc BroadCast (ChatMessage) returns (PublishMessage) {}
+  rpc BroadCast (BroadCastRequest) returns (BroadCastReply) {}
 }
 
 message PublishMessageRequest{
   string message = 1;
-  int32 nodeA = 2;
-  int32 nodeB = 3;
-  int32 nodeC = 4;
+  int32 lamportTime = 2;
 }
 
 message PublishMessageReply{
-  
+  string reply = 1;
 }
 
-message ChatMessage{
+message BroadCastRequest{
   string message = 1;
+  int32 lamportTime = 2;
 }
 
-message PublishMessage{
+message BroadCastReply{
   string message = 1;
 }

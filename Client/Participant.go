@@ -11,6 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type Participant struct {
+	
+}
+
 func main() {
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
 	var conn *grpc.ClientConn
@@ -25,10 +29,10 @@ func main() {
 	//  Create new Client from generated gRPC code from proto
 	c := ChatService.ChittyChatServiceClient(conn)
 
-	SendRequest(c)
+	SendPublishRequest(c)
 }
 
-func SendRequest(c ChatService.ChittyChatServiceClient) {
+func SendPublishRequest(c ChatService.ChittyChatServiceClient) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
 	message := ChatService.PublishMessageRequest{}
 
@@ -38,4 +42,8 @@ func SendRequest(c ChatService.ChittyChatServiceClient) {
 	}
 
 	fmt.Printf("Response from the Server: %s \n", response.Reply)
+}
+
+func (p *Participant) ReadBroadCastChannel(){
+
 }
