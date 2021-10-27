@@ -13,11 +13,6 @@ service ChittyChatServiceOUT{
   rpc BroadCast (BroadCastRequest) returns (BroadCastReply) {}
 }
 
-message Participant{
-  string ID = 1;
-  int32 lamportTime = 2;
-}
-
 message Server{
   string ID = 1;
   int32 lamportTime = 2;
@@ -44,7 +39,7 @@ message BroadCastReply{
 }
 
 message JoinRequest{
-  Participant participant = 1;
+  string participantID = 1;
   int32 lamportTime = 2;
 }
 
@@ -54,7 +49,7 @@ message JoinReply{
 }
 
 message LeaveRequest{
-  Participant participant = 1;
+  string participantID = 1;
   int32 lamportTime = 2;
 }
 

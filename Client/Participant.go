@@ -34,35 +34,35 @@ func main() {
 	p.timestamp = 0
 	p.ID = "0"
 
-	var textmessage = "HEJHEJ"
+	//var textmessage = "HEJHEJ"
 
-	p.SendPublishRequest(c, textmessage)
+	//p.SendPublishRequest(c, textmessage)
+	p.SendJoinRequest(c)
+	p.SendLeaveRequest(c)
 }
 
 func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient, textmessage string) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
+	var lamportTime = p.IncreaseLamportTime()
 	message := ChatService.PublishMessageRequest{
-		LamportTime: p.IncreaseLamportTime(),
+		LamportTime: lamportTime,
 		Message:     textmessage,
 	}
-
 	response, err := c.Publish(context.Background(), &message)
 	if err != nil {
 		log.Fatalf("Error when calling Publish: %s", err)
 	}
 
-	fmt.Printf("Response from the Server: %s \n", response.Reply)
+	fmt.Printf("Response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
 }
 
 func (p *Participant) SendJoinRequest(c ChatService.ChittyChatServiceINClient) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
-	participant := Participant{
-		ID: p.ID,
-		LamportTime: p.timestamp,
-	}
+	var lamportTime = p.IncreaseLamportTime()
+	log.Printf("Send join request, lamport time: %v", lamportTime)
 	message := ChatService.JoinRequest{
-		Participant: participant,
-		LamportTime: p.IncreaseLamportTime(),
+		ParticipantID: p.ID,
+		LamportTime:   lamportTime,
 	}
 
 	response, err := c.Join(context.Background(), &message)
@@ -70,15 +70,15 @@ func (p *Participant) SendJoinRequest(c ChatService.ChittyChatServiceINClient) {
 		log.Fatalf("Error when calling Publish: %s", err)
 	}
 
-	fmt.Printf("Response from the Server: %s \n", response.Reply)
+	log.Printf("Join response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
 }
 
 func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
-	message := ChatService.JoinRequest{
-		Participant: p,
-		LamportTime: p.IncreaseLamportTime(),
-		
+	var lamportTime = p.IncreaseLamportTime()
+	message := ChatService.LeaveRequest{
+		ParticipantID: p.ID,
+		LamportTime:   lamportTime,
 	}
 
 	response, err := c.Leave(context.Background(), &message)
@@ -86,13 +86,7 @@ func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) 
 		log.Fatalf("Error when calling Publish: %s", err)
 	}
 
-	fmt.Printf("Response from the Server: %s \n", response.Reply)
-}
-
-
-
-func (p *Participant) ReadBroadCastChannel() {
-
+	log.Printf("Leave response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
 }
 
 func (p *Participant) GetLamportTime(time int32) int32 {

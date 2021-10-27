@@ -17,33 +17,65 @@ type Server struct {
 	timestamp    int32
 }
 
-func (s *Server) PublishRequest(ctx context.Context, in *ChatService.PublishMessageRequest) (*ChatService.PublishMessageReply, error) {
-	log.Printf("Received publish request")
+func (s *Server) Publish(ctx context.Context, in *ChatService.PublishMessageRequest) (*ChatService.PublishMessageReply, error) {
 	s.timestamp = s.GetLamportTime(in.LamportTime)
+	log.Printf("Received publish request, lamport time: %v", s.timestamp)
+
+	log.Printf("Attempt publish, lamport time: %v", s.IncreaseLamportTime()) ////increase, because an event happens
+	//TODO: publish code
 	return &ChatService.PublishMessageReply{
 		Reply:       "Your reply here",
 		LamportTime: s.IncreaseLamportTime(),
 	}, nil
 }
 
-func (s *Server) JoinRequest(ctx context.Context, in *ChatService.JoinRequest) (*ChatService.JoinReply, error) {
-	log.Printf("Received publish request")
-	s.participants = append(s.participants, in.Participant.GetID())
+func (s *Server) Join(ctx context.Context, in *ChatService.JoinRequest) (*ChatService.JoinReply, error) {
 	s.timestamp = s.GetLamportTime(in.LamportTime)
-	return &ChatService.JoinReply{
-		Reply:       "Your reply here",
-		LamportTime: s.IncreaseLamportTime(),
-	}, nil
+	log.Printf("Received join request, lamport time: %v", s.timestamp)
+
+	log.Printf("Attempt join, lamport time: %v", s.IncreaseLamportTime()) //increase, because an event happens
+	if contains(s.participants, in.ParticipantID) {
+		return &ChatService.JoinReply{
+			Reply:       "You are already connected",
+			LamportTime: s.IncreaseLamportTime(),
+		}, nil
+	} else {
+		s.participants = append(s.participants, in.ParticipantID)
+		return &ChatService.JoinReply{
+			Reply:       "You are now connected",
+			LamportTime: s.IncreaseLamportTime(),
+		}, nil
+	}
+
 }
 
-func (s *Server) LeaveRequest(ctx context.Context, in *ChatService.LeaveRequest) (*ChatService.LeaveReply, error) {
-	log.Printf("Received publish request")
-	removeByID(s.participants, in.Participant.ID)
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Server) Leave(ctx context.Context, in *ChatService.LeaveRequest) (*ChatService.LeaveReply, error) {
 	s.timestamp = s.GetLamportTime(in.LamportTime)
-	return &ChatService.LeaveReply{
-		Reply:       "Your reply here",
-		LamportTime: s.IncreaseLamportTime(),
-	}, nil
+	log.Printf("Received leave request, lamport time: %v", s.timestamp)
+
+	log.Printf("Attempt leave, lamport time: %v", s.IncreaseLamportTime()) //increase, because an event happens
+	if contains(s.participants, in.ParticipantID) {
+		removeByID(s.participants, in.ParticipantID)
+		return &ChatService.LeaveReply{
+			Reply:       "User left the server",
+			LamportTime: s.IncreaseLamportTime(),
+		}, nil
+	} else {
+		return &ChatService.LeaveReply{
+			Reply:       "Unknown user tried to leave the server",
+			LamportTime: s.IncreaseLamportTime(),
+		}, nil
+	}
+
 }
 
 func removeByID(participants []string, ID string) []string {
