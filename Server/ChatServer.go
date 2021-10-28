@@ -23,9 +23,12 @@ func (s *Server) Publish(ctx context.Context, in *ChatService.PublishMessageRequ
 
 	log.Printf("Attempt publish, lamport time: %v", s.IncreaseLamportTime()) ////increase, because an event happens
 	//TODO: publish code
+
+	var lamporttime = s.IncreaseLamportTime()
+	log.Printf("Publish reply, lamport time: %v", lamporttime)
 	return &ChatService.PublishMessageReply{
-		Reply:       "Your reply here",
-		LamportTime: s.IncreaseLamportTime(),
+		Reply:       "Publish message reply",
+		LamportTime: lamporttime,
 	}, nil
 }
 
@@ -35,15 +38,19 @@ func (s *Server) Join(ctx context.Context, in *ChatService.JoinRequest) (*ChatSe
 
 	log.Printf("Attempt join, lamport time: %v", s.IncreaseLamportTime()) //increase, because an event happens
 	if contains(s.participants, in.ParticipantID) {
+		var lamporttime = s.IncreaseLamportTime()
+		log.Printf("Already joined reply, lamport time: %v", lamporttime)
 		return &ChatService.JoinReply{
 			Reply:       "You are already connected",
-			LamportTime: s.IncreaseLamportTime(),
+			LamportTime: lamporttime,
 		}, nil
 	} else {
 		s.participants = append(s.participants, in.ParticipantID)
+		var lamporttime = s.IncreaseLamportTime()
+		log.Printf("Join reply, lamport time: %v", lamporttime)
 		return &ChatService.JoinReply{
 			Reply:       "You are now connected",
-			LamportTime: s.IncreaseLamportTime(),
+			LamportTime: lamporttime,
 		}, nil
 	}
 
@@ -65,14 +72,18 @@ func (s *Server) Leave(ctx context.Context, in *ChatService.LeaveRequest) (*Chat
 	log.Printf("Attempt leave, lamport time: %v", s.IncreaseLamportTime()) //increase, because an event happens
 	if contains(s.participants, in.ParticipantID) {
 		removeByID(s.participants, in.ParticipantID)
+		var lamporttime = s.IncreaseLamportTime()
+		log.Printf("Leave reply, lamport time: %v", lamporttime)
 		return &ChatService.LeaveReply{
 			Reply:       "User left the server",
-			LamportTime: s.IncreaseLamportTime(),
+			LamportTime: lamporttime,
 		}, nil
 	} else {
+		var lamporttime = s.IncreaseLamportTime()
+		log.Printf("Unknown leave reply, lamport time: %v", lamporttime)
 		return &ChatService.LeaveReply{
 			Reply:       "Unknown user tried to leave the server",
-			LamportTime: s.IncreaseLamportTime(),
+			LamportTime: lamporttime,
 		}, nil
 	}
 
