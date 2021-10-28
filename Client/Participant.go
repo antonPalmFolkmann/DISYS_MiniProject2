@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -20,7 +21,13 @@ type Participant struct {
 	connectToServer bool
 }
 
+type Server struct {
+	ChatService.UnimplementedChittyChatServiceOUTServer
+	timestamp int32
+}
+
 func main() {
+	//IN
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
 	var conn *grpc.ClientConn
 	conn, err := grpc.Dial(":9080", grpc.WithInsecure())
@@ -64,9 +71,18 @@ func main() {
 		}
 	}
 
-	//var textmessage = "HEJHEJ"
+	//OUT
+	// Create listener tcp on port 8080
+	list, err := net.Listen("tcp", ":9080")
+	if err != nil {
+		log.Fatalf("Failed to listen on port 9080: %v", err)
+	}
+	grpcServer := grpc.NewServer()
+	ChatService.RegisterChittyChatServiceOUTServer(grpcServer, &Server{})
 
-	//p.SendPublishRequest(c, textmessage)
+	if err := grpcServer.Serve(list); err != nil {
+		log.Fatalf("failed to server %v", err)
+	}
 
 }
 
@@ -75,8 +91,9 @@ func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient
 	var lamportTime = p.IncreaseLamportTime()
 	log.Printf("Publish Request sent, lamport time: %v", lamportTime)
 	message := ChatService.PublishMessageRequest{
-		LamportTime: lamportTime,
-		Message:     textmessage,
+		LamportTime:   lamportTime,
+		Message:       textmessage,
+		ParticipantID: p.ID,
 	}
 	response, err := c.Publish(context.Background(), &message)
 	if err != nil {
@@ -132,4 +149,20 @@ func (p *Participant) GetLamportTime(time int32) int32 {
 func (p *Participant) IncreaseLamportTime() int32 {
 	p.timestamp = p.timestamp + 1
 	return p.timestamp
+}
+
+func (p *Participant) BroadCast(ctx context.Context, in *ChatService.BroadCastRequest) (*ChatService.BroadCastReply, error) {
+	p.timestamp = p.GetLamportTime(in.LamportTime)
+	log.Printf("Received BroadCast request, lamport time: %v", p.timestamp)
+
+	log.Printf("Attempt BroadCast, lamport time: %v", p.IncreaseLamportTime()) //increase, because an event happens
+	log.Printf("Participant %s wrote: %s", in.ParticipantID, in.Message)
+
+	var lamporttime = p.IncreaseLamportTime()
+	log.Printf("BroadCast reply, lamport time: %v", lamporttime)
+	return &ChatService.BroadCastReply{
+		Reply:       "Message Broadcast",
+		LamportTime: lamporttime,
+	}, nil
+
 }

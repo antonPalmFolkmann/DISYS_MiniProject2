@@ -21,6 +21,7 @@ message Server{
 message PublishMessageRequest{
   string message = 1;
   int32 lamportTime = 2;
+  string participantID = 3;
 }
 
 message PublishMessageReply{
@@ -31,6 +32,7 @@ message PublishMessageReply{
 message BroadCastRequest{
   string message = 1;
   int32 lamportTime = 2;
+  string participantID = 3;
 }
 
 message BroadCastReply{
