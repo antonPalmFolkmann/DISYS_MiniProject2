@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"github.com/antonPalmFolkmann/DISYS_MiniProject2.git/ChatService"
 
@@ -138,6 +139,14 @@ func (s *Server) SendBroadCastRequest(textmessage *ChatService.Message) {
 }
 
 func main() {
+	file, err := os.OpenFile("../info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	log.SetOutput(file)
 	//IN
 	// Create listener tcp on port 9080
 	list, err := net.Listen("tcp", ":9080")

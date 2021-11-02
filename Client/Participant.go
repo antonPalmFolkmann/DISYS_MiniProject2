@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
+	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
-
-	"log"
 
 	"github.com/antonPalmFolkmann/DISYS_MiniProject2.git/ChatService"
 
@@ -23,10 +23,18 @@ type Participant struct {
 }
 
 func main() {
+	file, err := os.OpenFile("../info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	log.SetOutput(file)
 	//IN
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
 	reader := bufio.NewReader(os.Stdin)
-	log.Println("Please write your port")
+	fmt.Println("Please write your port")
 	input, _ := reader.ReadString('\n')
 	// convert CRLF to LF
 	input = strings.Replace(input, "\n", "", -1)
@@ -66,7 +74,7 @@ func main() {
 		} else if len(input) <= 128 {
 			p.SendPublishRequest(c, input, true, false, false)
 		} else {
-			log.Printf("Invalid message")
+			fmt.Println("Invalid message")
 		}
 
 		if !p.connectToServer {
@@ -183,14 +191,17 @@ func (p *Participant) BroadCast(ctx context.Context, in *ChatService.BroadCastRe
 	}
 
 	if in.Message.IsPublish {
+		fmt.Printf("%v said: %v, lamport time: %v\n", in.ParticipantID, in.Message.Message, p.timestamp)
 		log.Printf("%v said: %v, lamport time: %v", in.ParticipantID, in.Message.Message, p.timestamp)
 	}
 	if in.Message.IsJoin {
+		fmt.Println(in.Message.Message)
 		log.Printf(in.Message.Message)
 	}
 	if in.Message.IsLeave {
 		if in.Message.ParticipantID != p.ID {
 
+			fmt.Println(in.Message.Message)
 			log.Printf(in.Message.Message)
 
 			var lamporttime = p.IncreaseLamportTime()

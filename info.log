@@ -1,0 +1,58 @@
+2021/11/02 17:11:43 Join Request sent, lamport time: 1
+2021/11/02 17:11:43 Received join request, lamport time: 2
+2021/11/02 17:11:43 Attempt join, lamport time: 3
+2021/11/02 17:11:43 Join reply, lamport time: 4
+2021/11/02 17:11:43 Join response from the Server: You are now connected, lamport time: 5 
+2021/11/02 17:11:43 Publish Request sent, lamport time: 6
+2021/11/02 17:11:43 Received publish request, lamport time: 7
+2021/11/02 17:11:43 Attempt publish, lamport time: 8
+2021/11/02 17:11:43 BroadCast Request sent, lamport time: 9
+2021/11/02 17:11:43 BroadCast Request sent to 9090, lamport time: 10
+2021/11/02 17:11:43 Received broadcast request, lamport time: 11
+2021/11/02 17:11:43 Attempt BroadCast, lamport time: 12
+2021/11/02 17:11:43 Participant 9090 joined Chitty-Chat at Lamport time 5
+2021/11/02 17:11:43 BroadCast reply, lamport time: 13
+2021/11/02 17:11:43 Response from 9090: BroadCast message reply, lamport time: 14 
+2021/11/02 17:11:43 Publish reply, lamport time: 15
+2021/11/02 17:11:43 Response from the Server: Publish message reply, lamport time: 16 
+2021/11/02 17:12:07 Join Request sent, lamport time: 1
+2021/11/02 17:12:07 Received join request, lamport time: 16
+2021/11/02 17:12:07 Attempt join, lamport time: 17
+2021/11/02 17:12:07 Join reply, lamport time: 18
+2021/11/02 17:12:07 Join response from the Server: You are now connected, lamport time: 19 
+2021/11/02 17:12:07 Publish Request sent, lamport time: 20
+2021/11/02 17:12:07 Received publish request, lamport time: 21
+2021/11/02 17:12:07 Attempt publish, lamport time: 22
+2021/11/02 17:12:07 BroadCast Request sent, lamport time: 23
+2021/11/02 17:12:07 BroadCast Request sent to 9090, lamport time: 24
+2021/11/02 17:12:07 Received broadcast request, lamport time: 25
+2021/11/02 17:12:07 Attempt BroadCast, lamport time: 26
+2021/11/02 17:12:07 Participant 9876 joined Chitty-Chat at Lamport time 19
+2021/11/02 17:12:07 BroadCast reply, lamport time: 27
+2021/11/02 17:12:07 Response from 9090: BroadCast message reply, lamport time: 28 
+2021/11/02 17:12:07 BroadCast Request sent to 9876, lamport time: 29
+2021/11/02 17:12:07 Received broadcast request, lamport time: 30
+2021/11/02 17:12:07 Attempt BroadCast, lamport time: 31
+2021/11/02 17:12:07 Participant 9876 joined Chitty-Chat at Lamport time 19
+2021/11/02 17:12:07 BroadCast reply, lamport time: 32
+2021/11/02 17:12:07 Response from 9876: BroadCast message reply, lamport time: 33 
+2021/11/02 17:12:07 Publish reply, lamport time: 34
+2021/11/02 17:12:07 Response from the Server: Publish message reply, lamport time: 35 
+2021/11/02 17:12:12 Publish Request sent, lamport time: 36
+2021/11/02 17:12:12 Received publish request, lamport time: 37
+2021/11/02 17:12:12 Attempt publish, lamport time: 38
+2021/11/02 17:12:12 BroadCast Request sent, lamport time: 39
+2021/11/02 17:12:12 BroadCast Request sent to 9090, lamport time: 40
+2021/11/02 17:12:12 Received broadcast request, lamport time: 41
+2021/11/02 17:12:12 Attempt BroadCast, lamport time: 42
+2021/11/02 17:12:12 9876 said: HEHE, lamport time: 42
+2021/11/02 17:12:12 BroadCast reply, lamport time: 43
+2021/11/02 17:12:12 Response from 9090: BroadCast message reply, lamport time: 44 
+2021/11/02 17:12:12 BroadCast Request sent to 9876, lamport time: 45
+2021/11/02 17:12:12 Received broadcast request, lamport time: 46
+2021/11/02 17:12:12 Attempt BroadCast, lamport time: 47
+2021/11/02 17:12:12 9876 said: HEHE, lamport time: 47
+2021/11/02 17:12:12 BroadCast reply, lamport time: 48
+2021/11/02 17:12:12 Response from 9876: BroadCast message reply, lamport time: 49 
+2021/11/02 17:12:12 Publish reply, lamport time: 50
+2021/11/02 17:12:12 Response from the Server: Publish message reply, lamport time: 51 
