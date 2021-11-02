@@ -3,26 +3,67 @@ syntax = "proto3";
 package chat;
 option go_package = "https://github.com/antonPalmFolkmann/DISYS_MiniProject2;ChatService";
 
-service ChittyChatService{
-  rpc Publish (ChatMessageRequest) returns (ChatMessageReply) {}
-  rpc BroadCast (ChatMessage) returns (PublishMessage) {}
+service ChittyChatServiceIN{
+  rpc Publish (Message) returns (PublishMessageReply) {}
+  rpc Join (JoinRequest) returns (JoinReply) {}
+  rpc Leave (LeaveRequest) returns (LeaveReply) {}
 }
 
-message ChatMessageRequest{
+service ChittyChatServiceOUT{
+  rpc BroadCast (BroadCastRequest) returns (BroadCastReply) {}
+}
+
+message Server{
+  string ID = 1;
+  int32 lamportTime = 2;
+}
+
+message Message{
   string message = 1;
-  int32 nodeA = 2;
-  int32 nodeB = 3;
-  int32 nodeC = 4;
+  int32 lamportTime = 2;
+  string participantID = 3;
+  bool isPublish = 4;
+  bool isJoin = 5;
+  bool isLeave = 6;
 }
 
-message ChatMessageReply{
-
+message PublishMessageReply{
+  string reply = 1;
+  int32 lamportTime = 2;
 }
 
-message ChatMessage{
-  string message = 1;
+message BroadCastRequest{
+  string participantID = 1;
+  Message message = 2;
+  int32 lamportTime = 3;
 }
 
-message PublishMessage{
-
+message JoinRequest{
+  string participantID = 1;
+  int32 lamportTime = 2;
+  
 }
+
+message JoinReply{
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
+}
+
+message LeaveRequest{
+  string participantID = 1;
+  int32 lamportTime = 2;
+}
+
+message LeaveReply{
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
+}
+
+message BroadCastReply{
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
+}
+
