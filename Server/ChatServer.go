@@ -14,16 +14,15 @@ type Server struct {
 	ChatService.UnimplementedChittyChatServiceINServer
 	participants []string
 	timestamp    int32
-	cOUT         ChatService.ChittyChatServiceOUTClient
+	//messages []*ChatService.Message
 }
 
-func (s *Server) Publish(ctx context.Context, in *ChatService.PublishMessageRequest) (*ChatService.PublishMessageReply, error) {
+func (s *Server) Publish(ctx context.Context, in *ChatService.Message) (*ChatService.PublishMessageReply, error) {
 	s.timestamp = s.GetLamportTime(in.LamportTime)
 	log.Printf("Received publish request, lamport time: %v", s.timestamp)
 
 	log.Printf("Attempt publish, lamport time: %v", s.IncreaseLamportTime()) ////increase, because an event happens
-	//TODO: publish code
-	s.SendBroadCastRequest(s.cOUT, in.Message, in.ParticipantID)
+	s.SendBroadCastRequest(in)
 
 	var lamporttime = s.IncreaseLamportTime()
 	log.Printf("Publish reply, lamport time: %v", lamporttime)
@@ -54,7 +53,6 @@ func (s *Server) Join(ctx context.Context, in *ChatService.JoinRequest) (*ChatSe
 			LamportTime: lamporttime,
 		}, nil
 	}
-
 }
 
 func contains(s []string, e string) bool {
@@ -103,27 +101,43 @@ func remove(slice []string, s int) []string {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-/*func (s *Server) BroadCast(ctx context.Context, in *ChatService.BroadCastRequest) (*ChatService.BroadCastReply, error) {
-	fmt.Printf("Received broadcastrequest request")
+func (s *Server) SendBroadCastRequest(textmessage *ChatService.Message) {
+	var lamportTime = s.IncreaseLamportTime()
+	log.Printf("BroadCast Request sent, lamport time: %v", lamportTime)
 
-	return &ChatService.BroadCastReply{Reply: "BroadCast succeeded"}, nil
-}*/
+	for _, p := range s.participants {
+		portString := ":" + p
+		// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
+		var conn *grpc.ClientConn
+		conn, err := grpc.Dial(portString, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("Could not connect: %s", err)
+		}
 
-func main() {
+		// Defer means: When this function returns, call this method (meaing, one main is done, close connection)
+		defer conn.Close()
 
-	//OUT
-	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
-	var connOUT *grpc.ClientConn
-	connOUT, errOUT := grpc.Dial(":9080", grpc.WithInsecure())
-	if errOUT != nil {
-		log.Fatalf("Could not connect: %s", errOUT)
+		//  Create new Client from generated gRPC code from proto
+		c := ChatService.NewChittyChatServiceOUTClient(conn)
+
+		var lamportTime = s.IncreaseLamportTime()
+		log.Printf("BroadCast Request sent to %v, lamport time: %v", p, lamportTime)
+		message := ChatService.BroadCastRequest{
+			Message:       textmessage,
+			ParticipantID: textmessage.ParticipantID,
+			LamportTime:   lamportTime,
+		}
+		response, err := c.BroadCast(context.Background(), &message)
+		if err != nil {
+			log.Fatalf("Error when calling BroadCast: %s", err)
+		}
+
+		log.Printf("Response from %v: %s, lamport time: %v \n", p, response.Reply, s.GetLamportTime(response.LamportTime))
 	}
 
-	// Defer means: When this function returns, call this method (meaing, one main is done, close connection)
-	defer connOUT.Close()
+}
 
-	//  Create new Client from generated gRPC code from proto
-
+func main() {
 	//IN
 	// Create listener tcp on port 9080
 	list, err := net.Listen("tcp", ":9080")
@@ -131,7 +145,7 @@ func main() {
 		log.Fatalf("Failed to listen on port 9080: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	ChatService.RegisterChittyChatServiceINServer(grpcServer, &Server{cOUT: ChatService.NewChittyChatServiceOUTClient(connOUT)})
+	ChatService.RegisterChittyChatServiceINServer(grpcServer, &Server{})
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
@@ -141,31 +155,14 @@ func main() {
 
 func (s *Server) GetLamportTime(time int32) int32 {
 	if s.timestamp > time {
-		return s.timestamp + 1
+		s.timestamp += 1
 	} else {
-		return time + 1
+		s.timestamp = time + 1
 	}
+	return s.timestamp
 }
 
 func (s *Server) IncreaseLamportTime() int32 {
 	s.timestamp = s.timestamp + 1
 	return s.timestamp
-}
-
-func (s *Server) SendBroadCastRequest(c ChatService.ChittyChatServiceOUTClient, publishMessage string, participantID string) {
-	// Between the curly brackets are nothing, because the .proto file expects no input.
-	var lamportTime = s.IncreaseLamportTime()
-	log.Printf("BroadCast Request sent, lamport time: %v", lamportTime)
-	message := ChatService.BroadCastRequest{
-		Message:       publishMessage,
-		LamportTime:   lamportTime,
-		ParticipantID: participantID,
-	}
-
-	response, err := c.BroadCast(context.Background(), &message)
-	if err != nil {
-		log.Fatalf("Error when calling BroadCast: %s", err)
-	}
-
-	log.Printf("BroadCast response from the Client: %s, lamport time: %v \n", response.Reply, s.GetLamportTime(response.LamportTime))
 }

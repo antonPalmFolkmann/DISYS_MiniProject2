@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 
 	"log"
@@ -19,31 +20,14 @@ type Participant struct {
 	ID              string
 	timestamp       int32
 	connectToServer bool
-}
-
-type Server struct {
 	ChatService.UnimplementedChittyChatServiceOUTServer
-	timestamp int32
 }
 
 func main() {
 	//IN
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
-	var conn *grpc.ClientConn
-	conn, err := grpc.Dial(":9080", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Could not connect: %s", err)
-	}
-
-	// Defer means: When this function returns, call this method (meaing, one main is done, close connection)
-	defer conn.Close()
-
-	//  Create new Client from generated gRPC code from proto
-	c := ChatService.NewChittyChatServiceINClient(conn)
-
 	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Println("Please write your ID")
+	fmt.Println("Please write your port")
 	input, _ := reader.ReadString('\n')
 	// convert CRLF to LF
 	input = strings.Replace(input, "\n", "", -1)
@@ -52,6 +36,25 @@ func main() {
 	p.timestamp = 0
 	p.ID = input
 	p.connectToServer = true
+
+	portString := ":" + input
+
+	// Create listener tcp on port *input*
+	go p.BroadCastListen(portString)
+
+	//for publish and join and leave
+	var conn *grpc.ClientConn
+	conn, errIN := grpc.Dial(":9080", grpc.WithInsecure())
+	if errIN != nil {
+		log.Fatalf("Could not connect: %s", errIN)
+	}
+
+	// Defer means: When this function returns, call this method (meaing, one main is done, close connection)
+	defer conn.Close()
+
+	//  Create new Client from generated gRPC code from proto
+	c := ChatService.NewChittyChatServiceINClient(conn)
+
 	p.SendJoinRequest(c)
 
 	for {
@@ -63,37 +66,39 @@ func main() {
 		if strings.Compare("/leave", input) == 0 {
 			p.SendLeaveRequest(c)
 		} else {
-			p.SendPublishRequest(c, input)
+			p.SendPublishRequest(c, input, true, false, false)
 		}
 
 		if !p.connectToServer {
 			break
 		}
 	}
+}
 
-	//OUT
-	// Create listener tcp on port 8080
-	list, err := net.Listen("tcp", ":9080")
+func (p *Participant) BroadCastListen(portString string) {
+	list, err := net.Listen("tcp", portString)
 	if err != nil {
-		log.Fatalf("Failed to listen on port 9080: %v", err)
+		log.Fatalf("Failed to listen on port %v: %v", p.ID, err)
 	}
 	grpcServer := grpc.NewServer()
-	ChatService.RegisterChittyChatServiceOUTServer(grpcServer, &Server{})
+	ChatService.RegisterChittyChatServiceOUTServer(grpcServer, &Participant{})
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
 	}
-
 }
 
-func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient, textmessage string) {
+func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient, textmessage string, isPublish bool, isJoin bool, isLeave bool) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
 	var lamportTime = p.IncreaseLamportTime()
 	log.Printf("Publish Request sent, lamport time: %v", lamportTime)
-	message := ChatService.PublishMessageRequest{
+	message := ChatService.Message{
 		LamportTime:   lamportTime,
 		Message:       textmessage,
 		ParticipantID: p.ID,
+		IsPublish:     isPublish,
+		IsJoin:        isJoin,
+		IsLeave:       isLeave,
 	}
 	response, err := c.Publish(context.Background(), &message)
 	if err != nil {
@@ -118,6 +123,10 @@ func (p *Participant) SendJoinRequest(c ChatService.ChittyChatServiceINClient) {
 	}
 
 	log.Printf("Join response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
+
+	stringToPublish := "Participant " + p.ID + " joined Chitty-Chat at Lamport time " + strconv.Itoa(int(p.timestamp))
+
+	p.SendPublishRequest(c, stringToPublish, false, true, false)
 }
 
 func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) {
@@ -136,14 +145,19 @@ func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) 
 
 	log.Printf("Leave response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
 	p.connectToServer = false
+
+	stringToPublish := "Participant " + p.ID + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(p.timestamp))
+	p.SendPublishRequest(c, stringToPublish, false, false, true)
 }
 
 func (p *Participant) GetLamportTime(time int32) int32 {
 	if p.timestamp > time {
-		return p.timestamp + 1
+		p.timestamp += 1
 	} else {
-		return time + 1
+		p.timestamp = time + 1
+
 	}
+	return p.timestamp
 }
 
 func (p *Participant) IncreaseLamportTime() int32 {
@@ -152,17 +166,33 @@ func (p *Participant) IncreaseLamportTime() int32 {
 }
 
 func (p *Participant) BroadCast(ctx context.Context, in *ChatService.BroadCastRequest) (*ChatService.BroadCastReply, error) {
-	p.timestamp = p.GetLamportTime(in.LamportTime)
-	log.Printf("Received BroadCast request, lamport time: %v", p.timestamp)
+	log.Println(in.Message.ParticipantID)
+	log.Println(p.ID)
+	if in.Message.ParticipantID != p.ID {
+		log.Printf("Received broadcast request, lamport time: %v", p.GetLamportTime(in.LamportTime))
 
-	log.Printf("Attempt BroadCast, lamport time: %v", p.IncreaseLamportTime()) //increase, because an event happens
-	log.Printf("Participant %s wrote: %s", in.ParticipantID, in.Message)
+		log.Printf("Attempt BroadCast, lamport time: %v", p.IncreaseLamportTime()) //increase, because an event happens
+		if in.Message.IsPublish {
+			log.Printf("%v said: %v", in.ParticipantID, in.Message.Message)
+		}
+		if in.Message.IsJoin {
+			log.Printf(in.Message.Message)
+		}
+		if in.Message.IsLeave {
+			log.Printf(in.Message.Message)
+		}
 
+		var lamporttime = p.IncreaseLamportTime()
+		log.Printf("BroadCast reply, lamport time: %v", lamporttime)
+		return &ChatService.BroadCastReply{
+			Reply:       "BroadCast message reply",
+			LamportTime: lamporttime,
+		}, nil
+
+	}
 	var lamporttime = p.IncreaseLamportTime()
-	log.Printf("BroadCast reply, lamport time: %v", lamporttime)
 	return &ChatService.BroadCastReply{
-		Reply:       "Message Broadcast",
+		Reply:       "BroadCast message reply",
 		LamportTime: lamporttime,
 	}, nil
-
 }

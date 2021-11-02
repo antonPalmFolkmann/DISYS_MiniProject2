@@ -4,7 +4,7 @@ package chat;
 option go_package = "https://github.com/antonPalmFolkmann/DISYS_MiniProject2;ChatService";
 
 service ChittyChatServiceIN{
-  rpc Publish (PublishMessageRequest) returns (PublishMessageReply) {}
+  rpc Publish (Message) returns (PublishMessageReply) {}
   rpc Join (JoinRequest) returns (JoinReply) {}
   rpc Leave (LeaveRequest) returns (LeaveReply) {}
 }
@@ -18,10 +18,13 @@ message Server{
   int32 lamportTime = 2;
 }
 
-message PublishMessageRequest{
+message Message{
   string message = 1;
   int32 lamportTime = 2;
   string participantID = 3;
+  bool isPublish = 4;
+  bool isJoin = 5;
+  bool isLeave = 6;
 }
 
 message PublishMessageReply{
@@ -30,24 +33,21 @@ message PublishMessageReply{
 }
 
 message BroadCastRequest{
-  string message = 1;
-  int32 lamportTime = 2;
-  string participantID = 3;
-}
-
-message BroadCastReply{
-  string reply = 1;
-  int32 lamportTime = 2;
+  string participantID = 1;
+  Message message = 2;
+  int32 lamportTime = 3;
 }
 
 message JoinRequest{
   string participantID = 1;
   int32 lamportTime = 2;
+  
 }
 
 message JoinReply{
-  string reply = 1;
-  int32 lamportTime = 2;
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
 }
 
 message LeaveRequest{
@@ -56,7 +56,14 @@ message LeaveRequest{
 }
 
 message LeaveReply{
-  string reply = 1;
-  int32 lamportTime = 2;
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
+}
+
+message BroadCastReply{
+  string participantID = 1;
+  string reply = 2;
+  int32 lamportTime = 3;
 }
 

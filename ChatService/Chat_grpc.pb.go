@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChittyChatServiceINClient interface {
-	Publish(ctx context.Context, in *PublishMessageRequest, opts ...grpc.CallOption) (*PublishMessageReply, error)
+	Publish(ctx context.Context, in *Message, opts ...grpc.CallOption) (*PublishMessageReply, error)
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinReply, error)
 	Leave(ctx context.Context, in *LeaveRequest, opts ...grpc.CallOption) (*LeaveReply, error)
 }
@@ -31,7 +31,7 @@ func NewChittyChatServiceINClient(cc grpc.ClientConnInterface) ChittyChatService
 	return &chittyChatServiceINClient{cc}
 }
 
-func (c *chittyChatServiceINClient) Publish(ctx context.Context, in *PublishMessageRequest, opts ...grpc.CallOption) (*PublishMessageReply, error) {
+func (c *chittyChatServiceINClient) Publish(ctx context.Context, in *Message, opts ...grpc.CallOption) (*PublishMessageReply, error) {
 	out := new(PublishMessageReply)
 	err := c.cc.Invoke(ctx, "/chat.ChittyChatServiceIN/Publish", in, out, opts...)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *chittyChatServiceINClient) Leave(ctx context.Context, in *LeaveRequest,
 // All implementations must embed UnimplementedChittyChatServiceINServer
 // for forward compatibility
 type ChittyChatServiceINServer interface {
-	Publish(context.Context, *PublishMessageRequest) (*PublishMessageReply, error)
+	Publish(context.Context, *Message) (*PublishMessageReply, error)
 	Join(context.Context, *JoinRequest) (*JoinReply, error)
 	Leave(context.Context, *LeaveRequest) (*LeaveReply, error)
 	mustEmbedUnimplementedChittyChatServiceINServer()
@@ -72,7 +72,7 @@ type ChittyChatServiceINServer interface {
 type UnimplementedChittyChatServiceINServer struct {
 }
 
-func (UnimplementedChittyChatServiceINServer) Publish(context.Context, *PublishMessageRequest) (*PublishMessageReply, error) {
+func (UnimplementedChittyChatServiceINServer) Publish(context.Context, *Message) (*PublishMessageReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedChittyChatServiceINServer) Join(context.Context, *JoinRequest) (*JoinReply, error) {
@@ -95,7 +95,7 @@ func RegisterChittyChatServiceINServer(s grpc.ServiceRegistrar, srv ChittyChatSe
 }
 
 func _ChittyChatServiceIN_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PublishMessageRequest)
+	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func _ChittyChatServiceIN_Publish_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/chat.ChittyChatServiceIN/Publish",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChittyChatServiceINServer).Publish(ctx, req.(*PublishMessageRequest))
+		return srv.(ChittyChatServiceINServer).Publish(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }
