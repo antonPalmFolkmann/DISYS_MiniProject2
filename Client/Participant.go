@@ -4,12 +4,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
-
-	"log"
 
 	"github.com/antonPalmFolkmann/DISYS_MiniProject2.git/ChatService"
 
@@ -24,6 +23,14 @@ type Participant struct {
 }
 
 func main() {
+	file, err := os.OpenFile("../info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	log.SetOutput(file)
 	//IN
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
 	reader := bufio.NewReader(os.Stdin)
@@ -38,13 +45,12 @@ func main() {
 	p.connectToServer = true
 
 	portString := ":" + input
-
 	// Create listener tcp on port *input*
-	go p.BroadCastListen(portString)
+	go p.BroadCastListen(portString, p.ID)
 
 	//for publish and join and leave
 	var conn *grpc.ClientConn
-	conn, errIN := grpc.Dial(":9080", grpc.WithInsecure())
+	conn, errIN := grpc.Dial(":7080", grpc.WithInsecure())
 	if errIN != nil {
 		log.Fatalf("Could not connect: %s", errIN)
 	}
@@ -65,8 +71,10 @@ func main() {
 
 		if strings.Compare("/leave", input) == 0 {
 			p.SendLeaveRequest(c)
-		} else {
+		} else if len(input) <= 128 {
 			p.SendPublishRequest(c, input, true, false, false)
+		} else {
+			fmt.Println("Invalid message")
 		}
 
 		if !p.connectToServer {
@@ -75,13 +83,13 @@ func main() {
 	}
 }
 
-func (p *Participant) BroadCastListen(portString string) {
+func (p *Participant) BroadCastListen(portString string, pID string) {
 	list, err := net.Listen("tcp", portString)
 	if err != nil {
 		log.Fatalf("Failed to listen on port %v: %v", p.ID, err)
 	}
 	grpcServer := grpc.NewServer()
-	ChatService.RegisterChittyChatServiceOUTServer(grpcServer, &Participant{})
+	ChatService.RegisterChittyChatServiceOUTServer(grpcServer, &Participant{ID: pID})
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
@@ -91,7 +99,11 @@ func (p *Participant) BroadCastListen(portString string) {
 func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient, textmessage string, isPublish bool, isJoin bool, isLeave bool) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
 	var lamportTime = p.IncreaseLamportTime()
-	log.Printf("Publish Request sent, lamport time: %v", lamportTime)
+
+	if !isLeave {
+		log.Printf("Publish Request sent, lamport time: %v", lamportTime)
+	}
+
 	message := ChatService.Message{
 		LamportTime:   lamportTime,
 		Message:       textmessage,
@@ -105,7 +117,10 @@ func (p *Participant) SendPublishRequest(c ChatService.ChittyChatServiceINClient
 		log.Fatalf("Error when calling Publish: %s", err)
 	}
 
-	log.Printf("Response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
+	if !isLeave {
+		log.Printf("Response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
+	}
+
 }
 
 func (p *Participant) SendJoinRequest(c ChatService.ChittyChatServiceINClient) {
@@ -132,11 +147,16 @@ func (p *Participant) SendJoinRequest(c ChatService.ChittyChatServiceINClient) {
 func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) {
 	// Between the curly brackets are nothing, because the .proto file expects no input.
 	var lamportTime = p.IncreaseLamportTime()
-	log.Printf("Leave Request sent, lamport time: %v", lamportTime)
+	//log.Printf("Leave Request sent, lamport time: %v", lamportTime)
+
 	message := ChatService.LeaveRequest{
 		ParticipantID: p.ID,
 		LamportTime:   lamportTime,
 	}
+
+	log.Printf("Leave Request sent, lamport time: %v", lamportTime)
+	stringToPublish := "Participant " + p.ID + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(p.timestamp))
+	p.SendPublishRequest(c, stringToPublish, false, false, true)
 
 	response, err := c.Leave(context.Background(), &message)
 	if err != nil {
@@ -146,8 +166,6 @@ func (p *Participant) SendLeaveRequest(c ChatService.ChittyChatServiceINClient) 
 	log.Printf("Leave response from the Server: %s, lamport time: %v \n", response.Reply, p.GetLamportTime(response.LamportTime))
 	p.connectToServer = false
 
-	stringToPublish := "Participant " + p.ID + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(p.timestamp))
-	p.SendPublishRequest(c, stringToPublish, false, false, true)
 }
 
 func (p *Participant) GetLamportTime(time int32) int32 {
@@ -166,33 +184,41 @@ func (p *Participant) IncreaseLamportTime() int32 {
 }
 
 func (p *Participant) BroadCast(ctx context.Context, in *ChatService.BroadCastRequest) (*ChatService.BroadCastReply, error) {
-	log.Println(in.Message.ParticipantID)
-	log.Println(p.ID)
-	if in.Message.ParticipantID != p.ID {
+	if !in.Message.IsLeave {
 		log.Printf("Received broadcast request, lamport time: %v", p.GetLamportTime(in.LamportTime))
 
 		log.Printf("Attempt BroadCast, lamport time: %v", p.IncreaseLamportTime()) //increase, because an event happens
-		if in.Message.IsPublish {
-			log.Printf("%v said: %v", in.ParticipantID, in.Message.Message)
-		}
-		if in.Message.IsJoin {
-			log.Printf(in.Message.Message)
-		}
-		if in.Message.IsLeave {
-			log.Printf(in.Message.Message)
-		}
-
-		var lamporttime = p.IncreaseLamportTime()
-		log.Printf("BroadCast reply, lamport time: %v", lamporttime)
-		return &ChatService.BroadCastReply{
-			Reply:       "BroadCast message reply",
-			LamportTime: lamporttime,
-		}, nil
-
 	}
+
+	if in.Message.IsPublish {
+		fmt.Printf("%v said: %v, lamport time: %v\n", in.ParticipantID, in.Message.Message, p.timestamp)
+		log.Printf("%v said: %v, lamport time: %v", in.ParticipantID, in.Message.Message, p.timestamp)
+	}
+	if in.Message.IsJoin {
+		fmt.Println(in.Message.Message)
+		log.Printf(in.Message.Message)
+	}
+	if in.Message.IsLeave {
+		if in.Message.ParticipantID != p.ID {
+
+			fmt.Println(in.Message.Message)
+			log.Printf(in.Message.Message)
+
+			var lamporttime = p.IncreaseLamportTime()
+			return &ChatService.BroadCastReply{
+				Reply:       "BroadCast message reply",
+				LamportTime: lamporttime,
+			}, nil
+		}
+	}
+
 	var lamporttime = p.IncreaseLamportTime()
+	if !in.Message.IsLeave {
+		log.Printf("BroadCast reply, lamport time: %v", lamporttime)
+	}
 	return &ChatService.BroadCastReply{
 		Reply:       "BroadCast message reply",
 		LamportTime: lamporttime,
 	}, nil
+
 }

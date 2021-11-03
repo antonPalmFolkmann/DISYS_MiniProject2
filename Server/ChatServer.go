@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"github.com/antonPalmFolkmann/DISYS_MiniProject2.git/ChatService"
 
@@ -65,14 +66,17 @@ func contains(s []string, e string) bool {
 }
 
 func (s *Server) Leave(ctx context.Context, in *ChatService.LeaveRequest) (*ChatService.LeaveReply, error) {
+
 	s.timestamp = s.GetLamportTime(in.LamportTime)
 	log.Printf("Received leave request, lamport time: %v", s.timestamp)
 
 	log.Printf("Attempt leave, lamport time: %v", s.IncreaseLamportTime()) //increase, because an event happens
 	if contains(s.participants, in.ParticipantID) {
-		removeByID(s.participants, in.ParticipantID)
+		s.participants = removeByID(s.participants, in.ParticipantID)
+
 		var lamporttime = s.IncreaseLamportTime()
 		log.Printf("Leave reply, lamport time: %v", lamporttime)
+
 		return &ChatService.LeaveReply{
 			Reply:       "User left the server",
 			LamportTime: lamporttime,
@@ -89,16 +93,15 @@ func (s *Server) Leave(ctx context.Context, in *ChatService.LeaveRequest) (*Chat
 }
 
 func removeByID(participants []string, ID string) []string {
-	for i, p := range participants {
-		if p == ID {
-			return remove(participants, i)
+	newParparticipants := make([]string, 0)
+
+	for _, p := range participants {
+		if p != ID {
+			newParparticipants = append(newParparticipants, p)
 		}
 	}
-	return participants
-}
 
-func remove(slice []string, s int) []string {
-	return append(slice[:s], slice[s+1:]...)
+	return newParparticipants
 }
 
 func (s *Server) SendBroadCastRequest(textmessage *ChatService.Message) {
@@ -138,11 +141,19 @@ func (s *Server) SendBroadCastRequest(textmessage *ChatService.Message) {
 }
 
 func main() {
-	//IN
-	// Create listener tcp on port 9080
-	list, err := net.Listen("tcp", ":9080")
+	file, err := os.OpenFile("../info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("Failed to listen on port 9080: %v", err)
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	log.SetOutput(file)
+	//IN
+	// Create listener tcp on port 7080
+	list, err := net.Listen("tcp", ":7080")
+	if err != nil {
+		log.Fatalf("Failed to listen on port 7080: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 	ChatService.RegisterChittyChatServiceINServer(grpcServer, &Server{})
