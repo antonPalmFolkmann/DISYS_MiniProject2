@@ -1,0 +1,83 @@
+2021/11/03 08:51:02 Join Request sent, lamport time: 1
+2021/11/03 08:51:02 Received join request, lamport time: 2
+2021/11/03 08:51:02 Attempt join, lamport time: 3
+2021/11/03 08:51:02 Join reply, lamport time: 4
+2021/11/03 08:51:02 Join response from the Server: You are now connected, lamport time: 5 
+2021/11/03 08:51:02 Publish Request sent, lamport time: 6
+2021/11/03 08:51:02 Received publish request, lamport time: 7
+2021/11/03 08:51:02 Attempt publish, lamport time: 8
+2021/11/03 08:51:02 BroadCast Request sent, lamport time: 9
+2021/11/03 08:51:02 BroadCast Request sent to 1111, lamport time: 10
+2021/11/03 08:51:02 Received broadcast request, lamport time: 11
+2021/11/03 08:51:02 Attempt BroadCast, lamport time: 12
+2021/11/03 08:51:02 Participant 1111 joined Chitty-Chat at Lamport time 5
+2021/11/03 08:51:02 BroadCast reply, lamport time: 13
+2021/11/03 08:51:02 Response from 1111: BroadCast message reply, lamport time: 14 
+2021/11/03 08:51:02 Publish reply, lamport time: 15
+2021/11/03 08:51:02 Response from the Server: Publish message reply, lamport time: 16 
+2021/11/03 08:51:10 Join Request sent, lamport time: 1
+2021/11/03 08:51:10 Received join request, lamport time: 16
+2021/11/03 08:51:10 Attempt join, lamport time: 17
+2021/11/03 08:51:10 Join reply, lamport time: 18
+2021/11/03 08:51:10 Join response from the Server: You are now connected, lamport time: 19 
+2021/11/03 08:51:10 Publish Request sent, lamport time: 20
+2021/11/03 08:51:10 Received publish request, lamport time: 21
+2021/11/03 08:51:10 Attempt publish, lamport time: 22
+2021/11/03 08:51:10 BroadCast Request sent, lamport time: 23
+2021/11/03 08:51:10 BroadCast Request sent to 1111, lamport time: 24
+2021/11/03 08:51:10 Received broadcast request, lamport time: 25
+2021/11/03 08:51:10 Attempt BroadCast, lamport time: 26
+2021/11/03 08:51:10 Participant 2222 joined Chitty-Chat at Lamport time 19
+2021/11/03 08:51:10 BroadCast reply, lamport time: 27
+2021/11/03 08:51:10 Response from 1111: BroadCast message reply, lamport time: 28 
+2021/11/03 08:51:10 BroadCast Request sent to 2222, lamport time: 29
+2021/11/03 08:51:10 Received broadcast request, lamport time: 30
+2021/11/03 08:51:10 Attempt BroadCast, lamport time: 31
+2021/11/03 08:51:10 Participant 2222 joined Chitty-Chat at Lamport time 19
+2021/11/03 08:51:10 BroadCast reply, lamport time: 32
+2021/11/03 08:51:10 Response from 2222: BroadCast message reply, lamport time: 33 
+2021/11/03 08:51:10 Publish reply, lamport time: 34
+2021/11/03 08:51:10 Response from the Server: Publish message reply, lamport time: 35 
+2021/11/03 08:51:18 Publish Request sent, lamport time: 17
+2021/11/03 08:51:18 Received publish request, lamport time: 35
+2021/11/03 08:51:18 Attempt publish, lamport time: 36
+2021/11/03 08:51:18 BroadCast Request sent, lamport time: 37
+2021/11/03 08:51:18 BroadCast Request sent to 1111, lamport time: 38
+2021/11/03 08:51:18 Received broadcast request, lamport time: 39
+2021/11/03 08:51:18 Attempt BroadCast, lamport time: 40
+2021/11/03 08:51:18 1111 said: Hej, lamport time: 40
+2021/11/03 08:51:18 BroadCast reply, lamport time: 41
+2021/11/03 08:51:18 Response from 1111: BroadCast message reply, lamport time: 42 
+2021/11/03 08:51:18 BroadCast Request sent to 2222, lamport time: 43
+2021/11/03 08:51:18 Received broadcast request, lamport time: 44
+2021/11/03 08:51:18 Attempt BroadCast, lamport time: 45
+2021/11/03 08:51:18 1111 said: Hej, lamport time: 45
+2021/11/03 08:51:18 BroadCast reply, lamport time: 46
+2021/11/03 08:51:18 Response from 2222: BroadCast message reply, lamport time: 47 
+2021/11/03 08:51:18 Publish reply, lamport time: 48
+2021/11/03 08:51:18 Response from the Server: Publish message reply, lamport time: 49 
+2021/11/03 08:51:34 Leave Request sent, lamport time: 50
+2021/11/03 08:51:34 Received publish request, lamport time: 52
+2021/11/03 08:51:34 Attempt publish, lamport time: 53
+2021/11/03 08:51:34 BroadCast Request sent, lamport time: 54
+2021/11/03 08:51:34 BroadCast Request sent to 1111, lamport time: 55
+2021/11/03 08:51:34 Response from 1111: BroadCast message reply, lamport time: 56 
+2021/11/03 08:51:34 BroadCast Request sent to 2222, lamport time: 57
+2021/11/03 08:51:34 Participant 1111 left Chitty-Chat at Lamport time 50
+2021/11/03 08:51:34 Response from 2222: BroadCast message reply, lamport time: 58 
+2021/11/03 08:51:34 Publish reply, lamport time: 59
+2021/11/03 08:51:34 Received leave request, lamport time: 60
+2021/11/03 08:51:34 Attempt leave, lamport time: 61
+2021/11/03 08:51:34 Leave reply, lamport time: 62
+2021/11/03 08:51:34 Leave response from the Server: User left the server, lamport time: 63 
+2021/11/03 08:51:47 Leave Request sent, lamport time: 36
+2021/11/03 08:51:47 Received publish request, lamport time: 63
+2021/11/03 08:51:47 Attempt publish, lamport time: 64
+2021/11/03 08:51:47 BroadCast Request sent, lamport time: 65
+2021/11/03 08:51:47 BroadCast Request sent to 2222, lamport time: 66
+2021/11/03 08:51:47 Response from 2222: BroadCast message reply, lamport time: 67 
+2021/11/03 08:51:47 Publish reply, lamport time: 68
+2021/11/03 08:51:47 Received leave request, lamport time: 69
+2021/11/03 08:51:47 Attempt leave, lamport time: 70
+2021/11/03 08:51:47 Leave reply, lamport time: 71
+2021/11/03 08:51:47 Leave response from the Server: User left the server, lamport time: 72 
