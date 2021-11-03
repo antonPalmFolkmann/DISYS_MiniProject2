@@ -50,7 +50,7 @@ func main() {
 
 	//for publish and join and leave
 	var conn *grpc.ClientConn
-	conn, errIN := grpc.Dial(":9080", grpc.WithInsecure())
+	conn, errIN := grpc.Dial(":7080", grpc.WithInsecure())
 	if errIN != nil {
 		log.Fatalf("Could not connect: %s", errIN)
 	}
