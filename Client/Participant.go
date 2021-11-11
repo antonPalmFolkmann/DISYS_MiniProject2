@@ -38,6 +38,7 @@ func main() {
 	input, _ := reader.ReadString('\n')
 	// convert CRLF to LF
 	input = strings.Replace(input, "\n", "", -1)
+	input = strings.Replace(input, "\r", "", -1)
 
 	var p Participant
 	p.timestamp = 0
@@ -68,6 +69,7 @@ func main() {
 		input, _ := reader.ReadString('\n')
 		// convert CRLF to LF
 		input = strings.Replace(input, "\n", "", -1)
+		input = strings.Replace(input, "\r", "", -1)
 
 		if strings.Compare("/leave", input) == 0 {
 			p.SendLeaveRequest(c)
